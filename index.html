@@ -18,9 +18,9 @@
     }
     .point {
       position: absolute;
-      width: 0;
-      height: 0;
-      background: red;
+      width: 7px;
+      height: 7px;
+      background: black;
       border-radius: 50%;
       transform: translate(-50%, -50%);
     }
@@ -30,6 +30,12 @@
       left: 0;
       overflow: visible;
       pointer-events: none;
+    }
+    .highlight {
+      background-color: red !important;
+      z-index: 3;
+      width: 10px;
+      height: 10px;
     }
   </style>
 </head>
@@ -43,6 +49,15 @@
   <button onclick="downloadExemplo()">Baixar exemplo .poly</button><h4></h4>
   <br>
   <input type="file" id="fileInput" accept=".poly,.txt" />
+
+  <br><br>
+  <label for="start">ID de Partida:</label>
+  <input type="number" id="start">
+  <label for="end">ID de Chegada:</label>
+  <input type="number" id="end">
+  <button onclick="calcularCaminho()">Calcular Caminho</button>
+
+  <p id="resultado"></p>
 
   <div id="canvas"></div>
 
@@ -59,6 +74,8 @@
       reader.readAsText(file);
     });
 
+    let points = [];
+    let vertices = [];
     function parsePolyFile(content) {
       const canvas = document.getElementById('canvas');
       canvas.innerHTML = '';
@@ -67,8 +84,8 @@
       const pointRegex = /id:\s*(\d+)\s*x:\s*([\d.]+)\s*y:\s*([\d.]+)/;
       const vertexRegex = /id_vertice:\s*\d+\s*de:\s*(\d+)\s*para:\s*(\d+)/;
 
-      const points = [];
-      const vertices = [];
+      vertices = [];
+      points = [];
 
       lines.forEach(line => {
         const pointMatch = line.match(pointRegex);
@@ -107,6 +124,7 @@
 
         const div = document.createElement('div');
         div.className = 'point';
+        div.id = 'point-'+p.id;
         div.title = `id: ${p.id}`;
         div.style.left = x + 'px';
         div.style.top = y + 'px';
@@ -177,6 +195,90 @@ id_vertice: 5 de: 5 para: 1 ignorar: 0
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  function distance(p1, p2) {
+    return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+  }
+
+  let graph = {};
+  function dijkstra(startId, endId) {
+    const distances = {};
+    const previous = {};
+    const visited = new Set();
+    const queue = [];
+
+    graph = {};
+
+    points.forEach(p => graph[p.id] = []);
+
+    vertices.forEach(e => {
+      const from = points.find(p => p.id === e.from);
+      const to = points.find(p => p.id === e.to);
+      const dist = distance(from, to);
+
+      graph[e.from].push({ id: e.to, weight: dist });
+      graph[e.to].push({ id: e.from, weight: dist }); // Bidirecional
+    });
+
+    points.forEach(p => {
+        distances[p.id] = Infinity;
+        previous[p.id] = null;
+    });
+
+    distances[startId] = 0;
+    queue.push({ id: startId, dist: 0 });
+
+    while (queue.length > 0) {
+        // Ordena pelo menor custo
+        queue.sort((a, b) => a.dist - b.dist);
+        const current = queue.shift();
+
+        if (current.id === endId) break;
+
+        if (visited.has(current.id)) continue;
+        visited.add(current.id);
+
+        for (const neighbor of graph[current.id]) {
+            const alt = distances[current.id] + neighbor.weight;
+            if (alt < distances[neighbor.id]) {
+                distances[neighbor.id] = alt;
+                previous[neighbor.id] = current.id;
+                queue.push({ id: neighbor.id, dist: alt });
+            }
+        }
+    }
+
+    // Reconstruir o caminho
+    const path = [];
+    let currentId = endId;
+
+    while (currentId !== null) {
+        path.unshift(currentId);
+        currentId = previous[currentId];
+    }
+
+    return path;
+  }
+
+  function calcularCaminho() {
+    const start = parseInt(document.getElementById('start').value);
+    const end = parseInt(document.getElementById('end').value);
+    const resultado = document.getElementById('resultado');
+
+    // Resetar destaques
+    points.forEach(p => {
+        document.getElementById('point-' + p.id).classList.remove('highlight');
+    });
+
+    const caminho = dijkstra(start, end);
+    resultado.textContent = "Caminho: " + caminho.join(" → ");
+
+    // Destacar pontos no caminho
+    caminho.forEach(id => {
+        document.getElementById('point-' + id).classList.add('highlight');
+    });
+  }
+
   </script>
 </body>
 </html>
