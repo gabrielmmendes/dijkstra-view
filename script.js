@@ -1,3 +1,10 @@
+fetch('exemplo.poly')
+    .then(response => response.text())
+    .then(data => {
+        parsePolyFile(data);
+    })
+    .catch(err => console.error('Erro:', err));
+
 document.getElementById('fileInput').addEventListener('change', function(event) {
     const file = event.target.files[0];
     if (!file) return;
