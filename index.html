@@ -51,11 +51,6 @@
   <input type="file" id="fileInput" accept=".poly,.txt" />
 
   <br><br>
-  <label for="start">ID de Partida:</label>
-  <input type="number" id="start">
-  <label for="end">ID de Chegada:</label>
-  <input type="number" id="end">
-  <button onclick="calcularCaminho()">Calcular Caminho</button>
 
   <p id="resultado"></p>
 
@@ -128,6 +123,8 @@
         div.title = `id: ${p.id}`;
         div.style.left = x + 'px';
         div.style.top = y + 'px';
+        selecionaPontos(div);
+        div.style.cursor = 'pointer';
         canvas.appendChild(div);
       });
 
@@ -260,9 +257,26 @@ id_vertice: 5 de: 5 para: 1 ignorar: 0
     return path;
   }
 
-  function calcularCaminho() {
-    const start = parseInt(document.getElementById('start').value);
-    const end = parseInt(document.getElementById('end').value);
+  function selecionaPontos(div) {
+    div.addEventListener('click', function () {
+      const pontosSelecionados = document.getElementsByClassName('highlight');
+      
+      if (pontosSelecionados.length > 2) {
+        points.forEach(p => {
+          document.getElementById('point-' + p.id).classList.remove('highlight');
+        });
+      }
+
+      div.classList.add('highlight');
+
+      if (pontosSelecionados.length === 2) {
+        calcularCaminho(pontosSelecionados[0].id.replace('point-', ''), pontosSelecionados[1].id.replace('point-', ''))
+      }
+
+    })
+  }
+
+  function calcularCaminho(start, end) {
     const resultado = document.getElementById('resultado');
 
     // Resetar destaques
