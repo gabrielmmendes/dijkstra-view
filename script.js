@@ -67,6 +67,7 @@ function parsePolyFile(content) {
 
         const div = document.createElement('div');
         div.className = 'point';
+        div.innerText = p.id;
         div.id = 'point-'+p.id;
         div.title = `id: ${p.id}`;
         div.style.left = x + 'px';
@@ -93,6 +94,8 @@ function parsePolyFile(content) {
             line.setAttribute("y2", to.y);
             line.setAttribute("stroke", "black");
             line.setAttribute("stroke-width", "1");
+            line.dataset.from = v.from;
+            line.dataset.to = v.to;
             svg.appendChild(line);
         }
     })
@@ -227,16 +230,32 @@ function selecionaPontos(div) {
 function calcularCaminho(start, end) {
     const resultado = document.getElementById('resultado');
 
-    // Resetar destaques
     points.forEach(p => {
         document.getElementById('point-' + p.id).classList.remove('highlight');
     });
 
-    const caminho = dijkstra(start, end);
+    document.querySelectorAll('line').forEach(line => {
+        line.classList.remove('highlight-edge');
+    });
+
+    const caminho = dijkstra(parseInt(start), parseInt(end));
     resultado.textContent = "Caminho: " + caminho.join(" → ");
 
-    // Destacar pontos no caminho
     caminho.forEach(id => {
         document.getElementById('point-' + id).classList.add('highlight');
     });
+
+    for (let i = 0; i < caminho.length - 1; i++) {
+        const from = caminho[i];
+        const to = caminho[i + 1];
+
+        document.querySelectorAll('line').forEach(line => {
+            const lf = parseInt(line.dataset.from);
+            const lt = parseInt(line.dataset.to);
+
+            if ((lf === from && lt === to) || (lf === to && lt === from)) {
+                line.classList.add('highlight-edge');
+            }
+        });
+    }
 }
