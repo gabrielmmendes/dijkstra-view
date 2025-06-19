@@ -1,26 +1,29 @@
 /**
- * Lê um conteúdo `.poly` e extrai os pontos e arestas para uso no grafo.
- * @param {string} content - Conteúdo do arquivo `.poly`
- * @returns {{ points: object[], vertices: object[] }} Objeto com arrays de pontos e vértices
+ * Lê um conteúdo `.poly` e extrai os pontos e arestas.
+ * Também renderiza os elementos no canvas e associa eventos de clique.
+ *
+ * @param {string} content - Conteúdo do arquivo `.poly`.
+ * @param {Function} selecionaPontos - Função que associa os eventos de clique aos pontos.
+ * @param {Function} calcularCaminho - Função que executa o cálculo do caminho entre dois pontos.
+ * @param {Function} dijkstra - Função que implementa o algoritmo de Dijkstra.
+ * @param {object[]} points - Array vazio para ser preenchido com os pontos do grafo.
+ * @param {object[]} vertices - Array vazio para ser preenchido com as arestas do grafo.
+ * @returns {{ points: object[], vertices: object[] }} Objetos preenchidos com os dados lidos.
  */
-export function parsePolyFile(
-	content,
-	selecionaPontos,
-	calcularCaminho,
-	dijkstra,
-	points,
-	vertices
-) {
+export function parsePolyFile(content, selecionaPontos, calcularCaminho, dijkstra, points, vertices) {
 	const canvas = document.getElementById("canvas");
 	canvas.innerHTML = "";
 
-	const lines = content.split(/\r?\n/);
+	// Expressões regulares para identificar pontos e vértices
 	const pointRegex = /id:\s*(\d+)\s*x:\s*([\d.]+)\s*y:\s*([\d.]+)/;
 	const vertexRegex = /id_vertice:\s*\d+\s*de:\s*(\d+)\s*para:\s*(\d+)/;
 
-	vertices = [];
-	points = [];
+	// Limpa os arrays de pontos e vértices
+	points.length = 0;
+	vertices.length = 0;
 
+	// Divide conteúdo por linhas e extrai dados
+	const lines = content.split(/\r?\n/);
 	lines.forEach((line) => {
 		const pointMatch = line.match(pointRegex);
 		const vertexMatch = line.match(vertexRegex);
@@ -39,36 +42,38 @@ export function parsePolyFile(
 		}
 	});
 
-	// Normalização para o canvas
-	const minX = Math.min(...points.map((p) => p.x));
-	const minY = Math.min(...points.map((p) => p.y));
-	const maxX = Math.max(...points.map((p) => p.x));
-	const maxY = Math.max(...points.map((p) => p.y));
-
+	// Normaliza coordenadas para o canvas
+	const minX = Math.min(...points.map(p => p.x));
+	const minY = Math.min(...points.map(p => p.y));
+	const maxX = Math.max(...points.map(p => p.x));
+	const maxY = Math.max(...points.map(p => p.y));
 	const scaleX = 550 / (maxX - minX);
 	const scaleY = 550 / (maxY - minY);
 
-	// Mapear pontos normalizados
+	// Mapeia os pontos no canvas
 	const pointMap = {};
 	points.forEach((p) => {
 		const x = (p.x - minX) * scaleX + 25;
 		const y = (p.y - minY) * scaleY + 25;
-
 		pointMap[p.id] = { x, y };
 
+		// Cria ponto visual no canvas
 		const div = document.createElement("div");
 		div.className = "point";
 		div.innerText = p.id;
 		div.id = "point-" + p.id;
 		div.title = `id: ${p.id}`;
-		div.style.left = x + "px";
-		div.style.top = y + "px";
-		selecionaPontos(div, calcularCaminho, dijkstra, points, vertices);
+		div.style.left = `${x}px`;
+		div.style.top = `${y}px`;
 		div.style.cursor = "pointer";
+
+		// Liga eventos de clique
+		selecionaPontos(div, calcularCaminho, dijkstra, points, vertices);
+
 		canvas.appendChild(div);
 	});
 
-	// SVG para desenhar linhas
+	// Cria SVG e desenha as arestas
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	svg.setAttribute("width", "100%");
 	svg.setAttribute("height", "100%");
@@ -78,10 +83,7 @@ export function parsePolyFile(
 		const to = pointMap[v.to];
 
 		if (from && to) {
-			const line = document.createElementNS(
-				"http://www.w3.org/2000/svg",
-				"line"
-			);
+			const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 			line.setAttribute("x1", from.x);
 			line.setAttribute("y1", from.y);
 			line.setAttribute("x2", to.x);
@@ -95,13 +97,15 @@ export function parsePolyFile(
 	});
 
 	canvas.appendChild(svg);
-}
 
+	return { points, vertices };
+}
 
 /**
  * Cria e dispara o download de um arquivo de exemplo `.poly`.
+ * O conteúdo simula pontos e arestas de um grafo simples.
  */
-function downloadExemplo() {
+export function downloadExemplo() {
 	const exemplo = `
 10	2	0	1
 id: 0 x: 600 y: 500
