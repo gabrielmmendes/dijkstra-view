@@ -16,26 +16,44 @@ function carregarExemplo() {
 	fetch("../images/exemplo.poly")
 		.then((response) => response.text())
 		.then((data) => {
-			parsePolyFile(data, selecionaPontos, calcularCaminho, dijkstra, points, vertices);
+			parsePolyFile(
+				data,
+				selecionaPontos,
+				calcularCaminho,
+				dijkstra,
+				points,
+				vertices
+			);
 		})
-		.catch((err) => console.error("Erro ao carregar arquivo exemplo:", err));
+		.catch((err) =>
+			console.error("Erro ao carregar arquivo exemplo:", err)
+		);
 }
 
 /**
  * Configura o input de upload de arquivos .poly enviados pelo usuário.
  */
 function configurarInputDeArquivo() {
-	document.getElementById("fileInput").addEventListener("change", function (event) {
-		const file = event.target.files[0];
-		if (!file) return;
+	document
+		.getElementById("fileInput")
+		.addEventListener("change", function (event) {
+			const file = event.target.files[0];
+			if (!file) return;
 
-		const reader = new FileReader();
-		reader.onload = function (e) {
-			const text = e.target.result;
-			parsePolyFile(text, selecionaPontos, calcularCaminho, dijkstra, points, vertices);
-		};
-		reader.readAsText(file);
-	});
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				const text = e.target.result;
+				parsePolyFile(
+					text,
+					selecionaPontos,
+					calcularCaminho,
+					dijkstra,
+					points,
+					vertices
+				);
+			};
+			reader.readAsText(file);
+		});
 }
 
 /**
@@ -61,13 +79,19 @@ function configurarBotaoCopiaGrafo() {
 						await navigator.clipboard.write([
 							new ClipboardItem({ "image/png": blob }),
 						]);
-						alert("Imagem do grafo copiada para a área de transferência!");
+						alert(
+							"Imagem do grafo copiada para a área de transferência!"
+						);
 					} catch (err) {
 						console.error("Erro ao copiar imagem:", err);
-						alert("Erro ao copiar imagem. Verifique permissões do navegador.");
+						alert(
+							"Erro ao copiar imagem. Verifique permissões do navegador."
+						);
 					}
 				} else {
-					alert("API de área de transferência não suportada neste navegador.");
+					alert(
+						"API de área de transferência não suportada neste navegador."
+					);
 				}
 			});
 		});
@@ -86,4 +110,3 @@ function inicializarApp() {
 
 // Executa a inicialização ao carregar o script
 inicializarApp();
-

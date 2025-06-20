@@ -100,53 +100,71 @@ export class MinHeap {
 }
 
 /**
- * Algoritmo de Dijkstra para encontrar o caminho mais curto entre dois pontos.
- * @param {string} startId - ID do ponto inicial
- * @param {string} endId - ID do ponto final
- * @param {Object[]} points - Lista de pontos com id, x, y
- * @param {Object[]} vertices - Lista de arestas com from, to
- * @param {Function} distance - Função que retorna distância entre dois pontos
- * @returns {string[]} Caminho mais curto como array de IDs
+ * Executa o algoritmo de Dijkstra para encontrar o caminho mais curto entre dois pontos em um grafo.
+ *
+ * @param {number} startId - ID do ponto de origem.
+ * @param {number} endId - ID do ponto de destino.
+ * @param {{id: number, x: number, y: number}[]} points - Lista de pontos com coordenadas e identificadores únicos.
+ * @param {{from: number, to: number}[]} vertices - Lista de arestas conectando os pontos por seus IDs.
+ * @param {(p1: {x: number, y: number}, p2: {x: number, y: number}) => number} distance - Função que calcula a distância entre dois pontos.
+ *
+ * @returns {{
+ *   path: number[],        // Lista ordenada com os IDs do caminho mais curto entre origem e destino.
+ *   nodesExplored: number, // Número total de nós visitados durante a execução do algoritmo.
+ *   cost: number,          // Custo total do caminho mais curto (soma das distâncias).
+ *   time: number           // Tempo de execução do algoritmo em milissegundos.
+ * }}
  */
 export function dijkstra(startId, endId, points, vertices, distance) {
-	const distances = {};
-	const previous = {};
-	const visited = new Set();
-	const graph = {};
+	const startTime = performance.now(); // Marca o início da medição de tempo
 
-	// Inicializa o grafo como lista de adjacência
+	// Inicializa estruturas para distâncias, predecessores e conjunto de visitados
+	const distances = {};   // Guarda a menor distância conhecida de startId até cada ponto
+	const previous = {};    // Guarda o ponto anterior no caminho mais curto
+	const visited = new Set(); // Guarda os pontos já visitados
+	const graph = {};       // Lista de adjacência representando o grafo
+
+	// Constrói o grafo (lista de adjacência) com pesos baseados na distância
 	points.forEach((p) => (graph[p.id] = []));
 
-	// Monta o grafo bidirecional com os pesos (distâncias)
 	vertices.forEach((e) => {
 		const from = points.find((p) => p.id === e.from);
 		const to = points.find((p) => p.id === e.to);
-		const dist = distance(from, to);
+		const dist = distance(from, to); // Calcula o peso da aresta
 
+		// Grafo não direcionado (bidirecional)
 		graph[e.from].push({ id: e.to, weight: dist });
 		graph[e.to].push({ id: e.from, weight: dist });
 	});
 
-	// Inicializa distâncias como infinito e anteriores como nulos
+	// Inicializa todas as distâncias como infinito e predecessores como null
 	points.forEach((p) => {
 		distances[p.id] = Infinity;
 		previous[p.id] = null;
 	});
 
-	// Inicializa a fila de prioridade com o ponto inicial
+	// Inicializa a fila de prioridade com o ponto de origem
 	const queue = new MinHeap();
 	distances[startId] = 0;
 	queue.insert({ id: startId, dist: 0 });
 
+	let nodesExplored = 0; // Contador de nós visitados
+
+	// Loop principal do algoritmo
 	while (!queue.isEmpty()) {
-		const current = queue.extractMin();
+		const current = queue.extractMin(); // Pega o nó com menor distância acumulada
 
-		if (current.id === endId) break;
-		if (visited.has(current.id)) continue;
+		if (current.id === endId) break; // Caminho encontrado, interrompe o loop
+		if (visited.has(current.id)) continue; // Ignora se já foi visitado
+
 		visited.add(current.id);
+		nodesExplored++; // Incrementa o número de nós explorados
 
+		// Atualiza os vizinhos do nó atual
 		for (const neighbor of graph[current.id]) {
 			const alt = distances[current.id] + neighbor.weight;
+
+			// Se encontrou um caminho mais curto até o vizinho
 			if (alt < distances[neighbor.id]) {
 				distances[neighbor.id] = alt;
 				previous[neighbor.id] = current.id;
@@ -155,14 +173,23 @@ export function dijkstra(startId, endId, points, vertices, distance) {
 		}
 	}
 
-	// Reconstrói o caminho mais curto
+	// Reconstrói o caminho mais curto a partir do destino
 	const path = [];
 	let currentId = endId;
 
 	while (currentId !== null) {
-		path.unshift(currentId);
+		path.unshift(currentId); // Insere no início do array
 		currentId = previous[currentId];
 	}
 
-	return path;
+	const endTime = performance.now(); // Marca o final da medição de tempo
+	const cost = distances[endId];     // Custo total do caminho
+
+	// Retorna estatísticas e o caminho encontrado
+	return {
+		path,
+		nodesExplored,
+		cost,
+		time: endTime - startTime,
+	};
 }
