@@ -3,61 +3,87 @@ import { dijkstra } from "./dijkstra.js";
 import { selecionaPontos } from "./ui.js";
 import { calcularCaminho } from "./utils.js";
 import { downloadExemplo, parsePolyFile } from "./parser.js";
+import html2canvas from "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm";
 
 // Armazenam os dados extraídos do arquivo .poly
 let points = [];
 let vertices = [];
 
 /**
- * Lê e processa um arquivo .poly via requisição fetch.
- * Após o carregamento, os pontos e vértices são extraídos e renderizados no canvas.
+ * Inicializa o sistema a partir de um arquivo de exemplo.
  */
-fetch("../images/exemplo.poly")
-	.then((response) => response.text())
-	.then((data) => {
-		// Executa o parser do arquivo .poly e renderiza a UI
-		parsePolyFile(
-			data,
-			selecionaPontos,
-			calcularCaminho,
-			dijkstra,
-			points,
-			vertices
-		);
-	})
-	.catch((err) => console.error("Erro ao carregar arquivo exemplo:", err));
+function carregarExemplo() {
+	fetch("../images/exemplo.poly")
+		.then((response) => response.text())
+		.then((data) => {
+			parsePolyFile(data, selecionaPontos, calcularCaminho, dijkstra, points, vertices);
+		})
+		.catch((err) => console.error("Erro ao carregar arquivo exemplo:", err));
+}
 
 /**
- * Lê e processa um arquivo .poly enviado pelo usuário via input[type="file"].
- * Após a leitura, os dados são enviados ao parser que renderiza os elementos no canvas.
+ * Configura o input de upload de arquivos .poly enviados pelo usuário.
  */
-document.getElementById("fileInput").addEventListener("change", function (event) {
-	const file = event.target.files[0];
-	if (!file) return;
+function configurarInputDeArquivo() {
+	document.getElementById("fileInput").addEventListener("change", function (event) {
+		const file = event.target.files[0];
+		if (!file) return;
 
-	const reader = new FileReader();
-
-	reader.onload = function (e) {
-		const text = e.target.result;
-		// Processa o conteúdo do arquivo lido
-		parsePolyFile(
-			text,
-			selecionaPontos,
-			calcularCaminho,
-			dijkstra,
-			points,
-			vertices
-		);
-	};
-
-	reader.readAsText(file);
-});
+		const reader = new FileReader();
+		reader.onload = function (e) {
+			const text = e.target.result;
+			parsePolyFile(text, selecionaPontos, calcularCaminho, dijkstra, points, vertices);
+		};
+		reader.readAsText(file);
+	});
+}
 
 /**
- * Adiciona um evento de clique ao botão com ID "donwload" para iniciar
- * o download de um arquivo de exemplo `.poly` quando clicado.
+ * Associa o botão de download de exemplo à sua ação correspondente.
  */
-document.getElementById("download").addEventListener("click", function () {
-	// Chama a função responsável por gerar e baixar o arquivo de exemplo
-	downloadExemplo();
-});
+function configurarBotaoDownload() {
+	document.getElementById("download").addEventListener("click", () => {
+		downloadExemplo();
+	});
+}
+
+/**
+ * Captura o grafo renderizado e copia como imagem para a área de transferência.
+ */
+function configurarBotaoCopiaGrafo() {
+	document.getElementById("copiarGrafo").addEventListener("click", () => {
+		const target = document.getElementById("canvas");
+
+		html2canvas(target).then((canvas) => {
+			canvas.toBlob(async (blob) => {
+				if (navigator.clipboard && window.ClipboardItem) {
+					try {
+						await navigator.clipboard.write([
+							new ClipboardItem({ "image/png": blob }),
+						]);
+						alert("Imagem do grafo copiada para a área de transferência!");
+					} catch (err) {
+						console.error("Erro ao copiar imagem:", err);
+						alert("Erro ao copiar imagem. Verifique permissões do navegador.");
+					}
+				} else {
+					alert("API de área de transferência não suportada neste navegador.");
+				}
+			});
+		});
+	});
+}
+
+/**
+ * Função principal de inicialização do sistema.
+ */
+function inicializarApp() {
+	carregarExemplo();
+	configurarInputDeArquivo();
+	configurarBotaoDownload();
+	configurarBotaoCopiaGrafo();
+}
+
+// Executa a inicialização ao carregar o script
+inicializarApp();
+
