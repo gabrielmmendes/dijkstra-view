@@ -2,7 +2,7 @@
 import { dijkstra } from "./dijkstra.js";
 import { selecionaPontos } from "./ui.js";
 import { calcularCaminho } from "./utils.js";
-import { parsePolyFile } from "./parser.js";
+import { downloadExemplo, parsePolyFile } from "./parser.js";
 
 // Armazenam os dados extraídos do arquivo .poly
 let points = [];
@@ -51,4 +51,13 @@ document.getElementById("fileInput").addEventListener("change", function (event)
 	};
 
 	reader.readAsText(file);
+});
+
+/**
+ * Adiciona um evento de clique ao botão com ID "donwload" para iniciar
+ * o download de um arquivo de exemplo `.poly` quando clicado.
+ */
+document.getElementById("download").addEventListener("click", function () {
+	// Chama a função responsável por gerar e baixar o arquivo de exemplo
+	downloadExemplo();
 });

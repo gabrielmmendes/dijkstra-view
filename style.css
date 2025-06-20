@@ -131,6 +131,19 @@ svg {
     transform: translate(-50%, -50%);
     z-index: 1;
 }
+
+.point.start {
+	background-color: green;
+	color: white;
+	font-weight: bold;
+}
+
+.point.end {
+	background-color: red;
+	color: white;
+	font-weight: bold;
+}
+
 .highlight {
     z-index: 3;
     background-color: var(--blue);
