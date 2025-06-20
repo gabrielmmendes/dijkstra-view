@@ -261,9 +261,13 @@ line {
         flex-direction: column;
     }
 
+    .left {
+        margin-top: 3%;
+    }
+
     .right {
         width: 100%;
-        margin: 0 3%;
+        margin: 0 3% 3% 3%;
     }
 
     .right .block {
