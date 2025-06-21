@@ -20,6 +20,22 @@ export function selecionaPontos(
 	 * Controla a seleção visual (highlight, start, end) e dispara o cálculo do caminho
 	 * quando dois pontos são selecionados.
 	 */
+	function limparSelecao(start, end) {
+		points.forEach((p) => {
+				document
+					.getElementById(`point-${p.id}`)
+					.classList.remove("highlight", "start", "end");
+			});
+
+			// Remove destaque das arestas também
+			document.querySelectorAll("line").forEach((line) => {
+				line.classList.remove("highlight-edge");
+			});
+
+			// Limpa referências
+			start = end = [];
+	}
+
 	div.addEventListener("click", () => {
 		// Obtém os elementos DOM com as classes 'start' e 'end'
 		let start = document.getElementsByClassName("start");
@@ -46,31 +62,42 @@ export function selecionaPontos(
 
 		// Se mais de dois pontos estiverem selecionados, limpa tudo
 		if (pontosSelecionados.length > 2) {
-			points.forEach((p) => {
-				document
-					.getElementById(`point-${p.id}`)
-					.classList.remove("highlight", "start", "end");
-			});
-
-			// Remove destaque das arestas também
-			document.querySelectorAll("line").forEach((line) => {
-				line.classList.remove("highlight-edge");
-			});
-
-			// Limpa referências
-			start = end = [];
-
+			limparSelecao(start, end);
 			return; // Encerra a função para evitar cálculo de caminho
 		}
 
 		// Se exatamente dois pontos foram selecionados, calcula o caminho entre eles
 		if (pontosSelecionados.length === 2) {
 			// Extrai os IDs numéricos dos elementos marcados como 'start' e 'end'
+			if( !(start[0] && end[0]) ) {
+				limparSelecao(start, end);
+
+				return;
+			}
 			const startId = parseInt(start[0].id.replace("point-", ""));
 			const endId = parseInt(end[0].id.replace("point-", ""));
 
 			// Chama a função para calcular e exibir o caminho mais curto
 			calcularCaminho(startId, endId, dijkstra, points, vertices);
+
 		}
+	});
+
+	/**
+	 * Remove um ponto do grafo ao dar duplo clique
+	 */
+	div.addEventListener("dblclick", () => {
+		// Remove o ponto
+		const pointId = parseInt(div.id.replace("point-", ""));
+		const pointIndex = points.findIndex(p => p.id === parseInt(pointId));
+		if (pointIndex !== -1) points.splice(pointIndex, 1);
+		div.remove();
+		// Remove as arestas conectadas ao ponto removido
+		for (let i = vertices.length - 1; i >= 0; i--) {
+			if (vertices[i].from === pointId || vertices[i].to === pointId) {
+				vertices.splice(i, 1);
+			}
+		}
+		document.querySelectorAll(`line[data-from="${pointId}"], line[data-to="${pointId}"]`).forEach(line => line.remove());
 	});
 }

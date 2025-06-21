@@ -45,6 +45,7 @@ main {
 .right {
     /* width: 1%; */
     display: flex;
+    flex-direction: column;
     flex-grow: 1;
     flex-basis: 0;
     justify-content: center;
@@ -126,6 +127,7 @@ main {
     background: #f9f9f9;
     margin-top: 20px;
     border-radius: 20px;
+    overflow: scroll;
 }
 
 svg {
@@ -198,10 +200,8 @@ line {
     font-weight: 500;
 }
 
-.canvas-button-container {
-    display: flex;
-    align-items: end;
-    height: 100%;
+.options-buttons-container {
+    margin: 3% 1% 0 3%;
 }
 
 #copiarGrafo {
@@ -215,9 +215,6 @@ line {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    bottom: 20%;
-    margin-left: 3%;
-    margin-bottom: 3%;
     color: var(--dark);
     box-shadow: 0 0 5px 5px rgba(0, 0, 0, .1);
 }
