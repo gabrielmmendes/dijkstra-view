@@ -11,19 +11,24 @@
  * @param {object[]} vertices - Array vazio para ser preenchido com as arestas do grafo.
  * @returns {{ points: object[], vertices: object[] }} Objetos preenchidos com os dados lidos.
  */
-export function parsePolyFile(content, selecionaPontos, adicionaPontos, calcularCaminho, dijkstra, points, vertices) {
+export function parsePolyFile(
+	content,
+	selecionaPontos,
+	adicionaPontos,
+	calcularCaminho,
+	dijkstra,
+	points,
+	vertices
+) {
 	const canvas = document.getElementById("canvas");
 	canvas.innerHTML = "";
 
-	// Expressões regulares para identificar pontos e vértices
 	const pointRegex = /id:\s*(\d+)\s*x:\s*([\d.]+)\s*y:\s*([\d.]+)/;
 	const vertexRegex = /id_vertice:\s*\d+\s*de:\s*(\d+)\s*para:\s*(\d+)/;
 
-	// Limpa os arrays de pontos e vértices
 	points.length = 0;
 	vertices.length = 0;
 
-	// Divide conteúdo por linhas e extrai dados
 	const lines = content.split(/\r?\n/);
 	lines.forEach((line) => {
 		const pointMatch = line.match(pointRegex);
@@ -44,38 +49,40 @@ export function parsePolyFile(content, selecionaPontos, adicionaPontos, calcular
 	});
 
 	// Normaliza coordenadas para o canvas
-	const minX = Math.min(...points.map(p => p.x));
-	const minY = Math.min(...points.map(p => p.y));
-	const maxX = Math.max(...points.map(p => p.x));
-	const maxY = Math.max(...points.map(p => p.y));
-	const scaleX = 550 / (maxX - minX);
-	const scaleY = 550 / (maxY - minY);
+	const minX = Math.min(...points.map((p) => p.x));
+	const minY = Math.min(...points.map((p) => p.y));
+	const maxX = Math.max(...points.map((p) => p.x));
+	const maxY = Math.max(...points.map((p) => p.y));
 
-	// Mapeia os pontos no canvas
+	const canvasSize = 600;
+	const padding = 50;
+	const rangeX = maxX - minX;
+	const rangeY = maxY - minY;
+	const scale = (canvasSize - 2 * padding) / Math.max(rangeX, rangeY);
+
 	const pointMap = {};
 	points.forEach((p) => {
-		const x = (p.x - minX) * scaleX + 25;
-		const y = (p.y - minY) * scaleY + 25;
+		const x = (p.x - minX) * scale + padding;
+		const y = (p.y - minY) * scale + padding;
 		pointMap[p.id] = { x, y };
 
-		// Cria ponto visual no canvas
 		const div = document.createElement("div");
 		div.className = "point";
+
 		div.innerText = p.id;
+
 		div.id = "point-" + p.id;
-		div.title = `id: ${p.id}`;
+		div.title = `id: ${p.id}\nx: ${p.x}\ny: ${p.y}`;
 		div.style.left = `${x}px`;
 		div.style.top = `${y}px`;
 		div.style.cursor = "pointer";
 
-		// Liga eventos de clique
 		selecionaPontos(div, calcularCaminho, dijkstra, points, vertices);
-
 		canvas.appendChild(div);
 	});
 	adicionaPontos(points, vertices);
 
-	// Cria SVG e desenha as arestas
+	// Desenha arestas
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	svg.setAttribute("width", "100%");
 	svg.setAttribute("height", "100%");
@@ -85,7 +92,10 @@ export function parsePolyFile(content, selecionaPontos, adicionaPontos, calcular
 		const to = pointMap[v.to];
 
 		if (from && to) {
-			const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			const line = document.createElementNS(
+				"http://www.w3.org/2000/svg",
+				"line"
+			);
 			line.setAttribute("x1", from.x);
 			line.setAttribute("y1", from.y);
 			line.setAttribute("x2", to.x);
@@ -99,6 +109,31 @@ export function parsePolyFile(content, selecionaPontos, adicionaPontos, calcular
 	});
 
 	canvas.appendChild(svg);
+
+	// Adiciona suporte a zoom/pan com Panzoom (se disponível)
+	if (window.Panzoom) {
+		const panzoom = Panzoom(canvas, {
+			maxScale: 10,
+			minScale: 0.5,
+			contain: "outside",
+		});
+
+		canvas.addEventListener("panzoomchange", () => {
+			const scale = panzoom.getScale();
+
+			// Atualiza tamanho dos pontos
+			canvas.querySelectorAll(".point").forEach((p) => {
+				const baseSize = 20;
+				p.style.width = `${baseSize / scale}px`;
+				p.style.height = `${baseSize / scale}px`;
+				p.style.fontSize = `${10 / scale}px`;
+			});
+		});
+
+		canvas.parentElement.addEventListener("wheel", panzoom.zoomWithWheel);
+		panzoom.zoom(1);
+		panzoom.pan(0, 0);
+	}
 
 	return { points, vertices };
 }

@@ -28,9 +28,9 @@ export function calcularCaminho(start, end, dijkstra, points, vertices) {
 	points.forEach((p) =>
 		document.getElementById(`point-${p.id}`).classList.remove("highlight")
 	);
-	document.querySelectorAll("line").forEach((line) =>
-		line.classList.remove("highlight-edge")
-	);
+	document
+		.querySelectorAll("line")
+		.forEach((line) => line.classList.remove("highlight-edge"));
 
 	// Executa Dijkstra com estatísticas
 	const { path, nodesExplored, cost, time } = dijkstra(
@@ -42,7 +42,7 @@ export function calcularCaminho(start, end, dijkstra, points, vertices) {
 	);
 
 	// Exibe caminho e estatísticas
-	resultado.textContent = `Caminho: ${path.join(" → ")}`;
+	mostrarToastCaminho(path);
 	statsDiv.innerHTML = `
 		<p><strong>Tempo:</strong> ${time.toFixed(2)} ms</p>
 		<p><strong>Vértices explorados:</strong> ${nodesExplored}</p>
@@ -64,4 +64,30 @@ export function calcularCaminho(start, end, dijkstra, points, vertices) {
 			}
 		});
 	}
+}
+
+/**
+ * Exibe um toast com o caminho percorrido entre dois vértices.
+ * @param {number[]} path - Caminho como array de IDs.
+ */
+function mostrarToastCaminho(path) {
+	if (!path || path.length < 2) return;
+
+	const inicio = path[0];
+	const fim = path[path.length - 1];
+	const texto = `Caminho de ${inicio} até ${fim}: ${path.join(" → ")}`;
+
+	const toast = document.getElementById("toast-caminho");
+	const textoElemento = document.getElementById("toast-caminho-texto");
+	const botaoFechar = document.getElementById("toast-caminho-close");
+
+	textoElemento.textContent = texto;
+	toast.classList.remove("hidden");
+	toast.classList.add("show");
+
+	// Botão "X" para fechar
+	botaoFechar.onclick = () => {
+		toast.classList.remove("show");
+		toast.classList.add("hidden");
+	};
 }
