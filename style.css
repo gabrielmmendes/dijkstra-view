@@ -201,22 +201,29 @@ line {
 }
 
 .options-buttons-container {
+    display: flex;
+    gap: 5%;
     margin: 3% 1% 0 3%;
 }
 
-#copiarGrafo {
+.option-button {
     /* position: absolute; */
     height: 60px;
     width: 60px;
     border-radius: 50%;
     border: none;
-    font-size: 22px;
+    font-size: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: var(--dark);
     box-shadow: 0 0 5px 5px rgba(0, 0, 0, .1);
+}
+
+.option-button.selected {
+    background-color: var(--purple);
+    color: white;
 }
 
 #toast-container {

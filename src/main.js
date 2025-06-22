@@ -1,6 +1,7 @@
 // Importa os módulos principais
 import { dijkstra } from "./dijkstra.js";
 import { selecionaPontos } from "./ui.js";
+import { adicionaPontos } from "./ui.js";
 import { calcularCaminho } from "./utils.js";
 import { downloadExemplo, parsePolyFile } from "./parser.js";
 import html2canvas from "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm";
@@ -19,6 +20,7 @@ function carregarExemplo() {
 			parsePolyFile(
 				data,
 				selecionaPontos,
+				adicionaPontos,
 				calcularCaminho,
 				dijkstra,
 				points,

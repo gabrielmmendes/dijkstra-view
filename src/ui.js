@@ -9,6 +9,105 @@
  * @param {Object[]} points - Lista de pontos do grafo com `{id, x, y}`.
  * @param {Object[]} vertices - Lista de arestas do grafo com `{from, to}`.
  */
+
+
+
+
+
+
+/**
+ * Controle das opções de edição do grafo (botões de adicionar e conectar pontos)
+ */
+const botaoAdicionarVertice = document.getElementById("adicionarVertice");
+const botaoAdicionarAresta = document.getElementById("adicionarAresta");
+
+// 0- Não selecionado, 1- Adicionar vértice, 2- Conectar vértices
+let option = 0;
+
+botaoAdicionarVertice.addEventListener("click", () => {
+	if(option == 0) {
+		option = 1;
+		botaoAdicionarVertice.classList.add("selected");
+		return;
+	}
+
+	if(option == 1) {
+		option = 0;
+		botaoAdicionarVertice.classList.remove("selected");
+		return;
+	}
+
+	if(option == 2) {
+		option = 1;
+		botaoAdicionarVertice.classList.add("selected");
+		botaoAdicionarAresta.classList.remove("selected");
+		return;
+	}
+
+});
+
+botaoAdicionarAresta.addEventListener("click", () => {
+	if(option == 0) {
+		option = 2;
+		botaoAdicionarAresta.classList.add("selected");
+		return;
+	}
+
+	if(option == 1) {
+		option = 2;
+		botaoAdicionarAresta.classList.add("selected");
+		botaoAdicionarVertice.classList.remove("selected");
+		return;
+	}
+
+	if(option == 2) {
+		option = 0;
+		botaoAdicionarAresta.classList.remove("selected");
+		return;
+	}
+});
+
+
+
+
+export function adicionaPontos(points, vertices) {
+
+	function adicionarVertice(clickX, clickY) {
+		// Cria um novo ponto no canvas
+		const novoPonto = document.createElement("div");
+		novoPonto.classList.add("point");
+		novoPonto.style.left = `${clickX}px`;
+		novoPonto.style.top = `${clickY}px`;
+		novoPonto.id = `point-${points.length + 1}`; // ID único para o ponto
+		novoPonto.title = `id: ${points.length + 1}`;
+
+		canvas.appendChild(novoPonto);
+
+		// Adiciona o ponto à lista de pontos
+		points.push({ id: points.length + 1, x: clickX, y: clickY });
+
+		return;
+	}
+
+	/**
+	 * Clique no canvas para adicionar um ponto
+	 */
+	const canvas = document.getElementById("canvas");
+	canvas.addEventListener("click", (event) => {
+
+		if(event.target === canvas) {
+			//Adicionar novo ponto
+			if(option == 1) {
+				adicionarVertice(event.offsetX, event.offsetY);
+			}
+
+		}
+
+	});
+
+}
+
+
 export function selecionaPontos(
 	div,
 	calcularCaminho,
@@ -16,6 +115,7 @@ export function selecionaPontos(
 	points,
 	vertices
 ) {
+
 	/**
 	 * Controla a seleção visual (highlight, start, end) e dispara o cálculo do caminho
 	 * quando dois pontos são selecionados.
@@ -36,7 +136,45 @@ export function selecionaPontos(
 			start = end = [];
 	}
 
+	/**
+	 * Cria uma aresta entre dois pontos selecionados, verificando se esta já existe
+	 */
+	function linkVertices(startId, endId, start, end) {
+		// Verifica se aresta existe
+		if (vertices.some(v => (v.from === startId && v.to === endId) || (v.from === endId && v.to === startId))) {
+			alert("A aresta entre esses pontos já existe.");
+			return;
+		}
+
+		vertices.push({from: startId, to: endId});
+
+		// Cria a linha SVG para a aresta
+		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		const from = document.getElementById(`point-${startId}`);
+		const to = document.getElementById(`point-${endId}`);
+
+		line.setAttribute("x1", from.offsetLeft + from.offsetWidth/2 - 10);
+		line.setAttribute("y1", from.offsetTop + from.offsetHeight/2 - 10);
+		line.setAttribute("x2", to.offsetLeft + to.offsetWidth/2 - 10);
+		line.setAttribute("y2", to.offsetTop + to.offsetHeight/2 - 10);
+		line.setAttribute("stroke", "black");
+		line.setAttribute("stroke-width", "1");
+		line.dataset.from = startId;
+		line.dataset.to = endId;
+
+		document.getElementsByTagName("svg")[0].appendChild(line);
+
+		limparSelecao(start, end);
+		return;
+	}
+	
+
 	div.addEventListener("click", () => {
+		if(option == 1) {
+			alert("Não foi possível adicionar ponto, já existe outro ponto no local.");
+			return;
+		}
+
 		// Obtém os elementos DOM com as classes 'start' e 'end'
 		let start = document.getElementsByClassName("start");
 		let end = document.getElementsByClassName("end");
@@ -78,7 +216,15 @@ export function selecionaPontos(
 			const endId = parseInt(end[0].id.replace("point-", ""));
 
 			// Chama a função para calcular e exibir o caminho mais curto
-			calcularCaminho(startId, endId, dijkstra, points, vertices);
+			if(option == 0) {
+				calcularCaminho(startId, endId, dijkstra, points, vertices);
+				return;
+			}
+			if(option == 2) {
+				linkVertices(startId, endId, start, end);
+				
+				return;
+			}
 
 		}
 	});
@@ -100,4 +246,5 @@ export function selecionaPontos(
 		}
 		document.querySelectorAll(`line[data-from="${pointId}"], line[data-to="${pointId}"]`).forEach(line => line.remove());
 	});
+
 }

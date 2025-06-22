@@ -4,13 +4,14 @@
  *
  * @param {string} content - Conteúdo do arquivo `.poly`.
  * @param {Function} selecionaPontos - Função que associa os eventos de clique aos pontos.
+ * @param {Function} adicionaPontos
  * @param {Function} calcularCaminho - Função que executa o cálculo do caminho entre dois pontos.
  * @param {Function} dijkstra - Função que implementa o algoritmo de Dijkstra.
  * @param {object[]} points - Array vazio para ser preenchido com os pontos do grafo.
  * @param {object[]} vertices - Array vazio para ser preenchido com as arestas do grafo.
  * @returns {{ points: object[], vertices: object[] }} Objetos preenchidos com os dados lidos.
  */
-export function parsePolyFile(content, selecionaPontos, calcularCaminho, dijkstra, points, vertices) {
+export function parsePolyFile(content, selecionaPontos, adicionaPontos, calcularCaminho, dijkstra, points, vertices) {
 	const canvas = document.getElementById("canvas");
 	canvas.innerHTML = "";
 
@@ -72,6 +73,7 @@ export function parsePolyFile(content, selecionaPontos, calcularCaminho, dijkstr
 
 		canvas.appendChild(div);
 	});
+	adicionaPontos(points, vertices);
 
 	// Cria SVG e desenha as arestas
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
