@@ -80,7 +80,7 @@ export function parsePolyFile(
 		selecionaPontos(div, calcularCaminho, dijkstra, points, vertices);
 		canvas.appendChild(div);
 	});
-	adicionaPontos(points, vertices);
+	adicionaPontos(points, vertices, calcularCaminho, dijkstra);
 
 	// Desenha arestas
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

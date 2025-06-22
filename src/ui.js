@@ -70,21 +70,27 @@ botaoAdicionarAresta.addEventListener("click", () => {
 
 
 
-export function adicionaPontos(points, vertices) {
+export function adicionaPontos(points, vertices, calcularCaminho, dijkstra) {
 
 	function adicionarVertice(clickX, clickY) {
 		// Cria um novo ponto no canvas
 		const novoPonto = document.createElement("div");
+		const pointId = points[points.length-1].id + 1;
+		console.log(points);
+
 		novoPonto.classList.add("point");
 		novoPonto.style.left = `${clickX}px`;
 		novoPonto.style.top = `${clickY}px`;
-		novoPonto.id = `point-${points.length + 1}`; // ID único para o ponto
-		novoPonto.title = `id: ${points.length + 1}`;
+		novoPonto.style.cursor = "pointer";
+		novoPonto.id = `point-${pointId}`;
+		novoPonto.title = `id: ${pointId}`;
+		novoPonto.innerText = pointId;
 
 		canvas.appendChild(novoPonto);
+		selecionaPontos(novoPonto, calcularCaminho, dijkstra, points, vertices);
 
 		// Adiciona o ponto à lista de pontos
-		points.push({ id: points.length + 1, x: clickX, y: clickY });
+		points.push({ id: pointId, x: clickX, y: clickY });
 
 		return;
 	}

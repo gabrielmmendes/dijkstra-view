@@ -48,6 +48,7 @@ function configurarInputDeArquivo() {
 				parsePolyFile(
 					text,
 					selecionaPontos,
+					adicionaPontos,
 					calcularCaminho,
 					dijkstra,
 					points,
