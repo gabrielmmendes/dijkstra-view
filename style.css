@@ -119,22 +119,27 @@ main {
 }
 
 /* ------------ Estilização do grafo -------------*/
+.card {
+    position: relative;
+    overflow: hidden;
+    height: 500px;
+    width: 500px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    border-radius: 20px;
+}
+
 #canvas {
     position: relative;
     width: 600px;
     height: 600px;
-    border: 1px solid #ccc;
-    background: #f9f9f9;
     margin-top: 20px;
-    border-radius: 20px;
-    overflow: scroll;
 }
 
 svg {
     position: absolute;
     top: 0;
     left: 0;
-    overflow: visible;
     pointer-events: none;
 }
 
@@ -172,7 +177,7 @@ svg {
 }
 
 line {
-    stroke-width: 3;
+    stroke-width: .5;
 }
 
 .highlight-edge {
@@ -224,12 +229,30 @@ line {
 	top: 20px;
 	right: 20px;
 	display: flex;
+    align-items: end;
 	flex-direction: column;
 	gap: 10px;
 	z-index: 1000;
 }
 
 .toast {
+	background-color: #333;
+	color: #fff;
+	padding: 12px 20px;
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+	font-size: 14px;
+	max-width: 320px;
+	position: relative;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+
+.estatisticas {
 	background-color: #333;
 	color: #fff;
 	padding: 12px 16px;
@@ -240,8 +263,46 @@ line {
 	opacity: 0;
 	transform: translateY(-20px);
 	animation: slideIn 0.4s forwards;
-	max-width: 280px;
+	max-width: 200px;
 }
+
+.toast.show {
+	opacity: 1;
+}
+
+.toast.hidden {
+	display: none;
+}
+
+.toast-close {
+	background: none;
+	border: none;
+	color: #fff;
+	font-size: 18px;
+	cursor: pointer;
+	margin-left: 12px;
+}
+
+/* Tooltip */
+.canvas-tooltip {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background-color: rgba(0, 0, 0, 0.75);
+	color: #fff;
+	padding: 6px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	pointer-events: none; /* permite o scroll sem interferência */
+}
+
+/* Mostrar tooltip ao passar o mouse sobre a área do canvas */
+.card:hover .canvas-tooltip {
+	opacity: 1;
+}
+
 
 /* Animação para entrada suave */
 @keyframes slideIn {
