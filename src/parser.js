@@ -158,7 +158,7 @@ export function parsePolyFile(
 
 			// Atualiza tamanho dos pontos
 			canvas.querySelectorAll(".point").forEach((p) => {
-				const baseSize = 10;
+				const baseSize = 20;
 				p.style.width = `${baseSize / scale}px`;
 				p.style.height = `${baseSize / scale}px`;
 				p.style.fontSize = `${10 / scale}px`;
