@@ -23,28 +23,63 @@ export function parsePolyFile(
 	const canvas = document.getElementById("canvas");
 	canvas.innerHTML = "";
 
-	const pointRegex = /id:\s*(\d+)\s*x:\s*([\d.]+)\s*y:\s*([\d.]+)/;
-	const vertexRegex = /id_vertice:\s*\d+\s*de:\s*(\d+)\s*para:\s*(\d+)/;
+	// New regex patterns for the new format
+	const pointRegex = /^(\d+)\s+([\d.]+)\s+([\d.]+)$/;
+	const vertexRegex = /^(\d+)\s+(\d+)\s+(\d+)\s+\d+$/;
+	// Regex for header lines
+	const pointsHeaderRegex = /^(\d+)\s+2\s+0\s+1$/;
+	const verticesHeaderRegex = /^(\d+)\s+1$/;
 
 	points.length = 0;
 	vertices.length = 0;
 
 	const lines = content.split(/\r?\n/);
-	lines.forEach((line) => {
-		const pointMatch = line.match(pointRegex);
-		const vertexMatch = line.match(vertexRegex);
 
-		if (pointMatch) {
-			points.push({
-				id: parseInt(pointMatch[1]),
-				x: parseFloat(pointMatch[2]),
-				y: parseFloat(pointMatch[3]),
-			});
-		} else if (vertexMatch) {
-			vertices.push({
-				from: parseInt(vertexMatch[1]),
-				to: parseInt(vertexMatch[2]),
-			});
+	// Parse the file in two sections: points and vertices
+	let parsingPoints = false;
+	let parsingVertices = false;
+
+	lines.forEach((line) => {
+		// Skip empty lines
+		if (!line.trim()) return;
+
+		// Check if this is the points header
+		const pointsHeaderMatch = line.match(pointsHeaderRegex);
+		if (pointsHeaderMatch) {
+			parsingPoints = true;
+			parsingVertices = false;
+			return;
+		}
+
+		// Check if this is the vertices header
+		const verticesHeaderMatch = line.match(verticesHeaderRegex);
+		if (verticesHeaderMatch) {
+			parsingPoints = false;
+			parsingVertices = true;
+			return;
+		}
+
+		// Parse points
+		if (parsingPoints) {
+			const pointMatch = line.match(pointRegex);
+			if (pointMatch) {
+				points.push({
+					id: parseInt(pointMatch[1]),
+					x: parseFloat(pointMatch[2]),
+					y: parseFloat(pointMatch[3]),
+				});
+			}
+		}
+
+		// Parse vertices
+		if (parsingVertices) {
+			const vertexMatch = line.match(vertexRegex);
+			if (vertexMatch) {
+				vertices.push({
+					from: parseInt(vertexMatch[2]),
+					to: parseInt(vertexMatch[3]),
+				});
+			}
 		}
 	});
 
@@ -123,7 +158,7 @@ export function parsePolyFile(
 
 			// Atualiza tamanho dos pontos
 			canvas.querySelectorAll(".point").forEach((p) => {
-				const baseSize = 20;
+				const baseSize = 10;
 				p.style.width = `${baseSize / scale}px`;
 				p.style.height = `${baseSize / scale}px`;
 				p.style.fontSize = `${10 / scale}px`;
@@ -145,30 +180,30 @@ export function parsePolyFile(
 export function downloadExemplo() {
 	const exemplo = `
 10	2	0	1
-id: 0 x: 600 y: 500
-id: 1 x: 1070 y: 650
-id: 2 x: 1187 y: 868
-id: 3 x: 1023 y: 875
-id: 4 x: 968 y: 868
-id: 5 x: 905 y: 853
-id: 6 x: 852 y: 833
-id: 7 x: 832 y: 823
-id: 8 x: 715 y: 775
-id: 9 x: 628 y: 714
-5	1
-id_vertice: 0 de: 0 para: 1 ignorar: 0
-id_vertice: 1 de: 0 para: 9 ignorar: 0
-id_vertice: 2 de: 9 para: 8 ignorar: 0
-id_vertice: 3 de: 8 para: 7 ignorar: 0
-id_vertice: 4 de: 7 para: 6 ignorar: 0
-id_vertice: 5 de: 6 para: 5 ignorar: 0
-id_vertice: 5 de: 5 para: 4 ignorar: 0
-id_vertice: 5 de: 4 para: 3 ignorar: 0
-id_vertice: 5 de: 3 para: 2 ignorar: 0
-id_vertice: 5 de: 2 para: 1 ignorar: 0
-id_vertice: 5 de: 8 para: 1 ignorar: 0
-id_vertice: 5 de: 6 para: 1 ignorar: 0
-id_vertice: 5 de: 5 para: 1 ignorar: 0
+0	600	500
+1	1070	650
+2	1187	868
+3	1023	875
+4	968	868
+5	905	853
+6	852	833
+7	832	823
+8	715	775
+9	628	714
+13	1
+0	0	1	0
+1	0	9	0
+2	9	8	0
+3	8	7	0
+4	7	6	0
+5	6	5	0
+6	5	4	0
+7	4	3	0
+8	3	2	0
+9	2	1	0
+10	8	1	0
+11	6	1	0
+12	5	1	0
     `.trim();
 
 	const blob = new Blob([exemplo], { type: "text/plain" });

@@ -11,28 +11,6 @@ let points = [];
 let vertices = [];
 
 /**
- * Inicializa o sistema a partir de um arquivo de exemplo.
- */
-function carregarExemplo() {
-	fetch("../images/exemplo.poly")
-		.then((response) => response.text())
-		.then((data) => {
-			parsePolyFile(
-				data,
-				selecionaPontos,
-				adicionaPontos,
-				calcularCaminho,
-				dijkstra,
-				points,
-				vertices
-			);
-		})
-		.catch((err) =>
-			console.error("Erro ao carregar arquivo exemplo:", err)
-		);
-}
-
-/**
  * Configura o input de upload de arquivos .poly enviados pelo usuário.
  */
 function configurarInputDeArquivo() {
@@ -105,7 +83,6 @@ function configurarBotaoCopiaGrafo() {
  * Função principal de inicialização do sistema.
  */
 function inicializarApp() {
-	carregarExemplo();
 	configurarInputDeArquivo();
 	configurarBotaoDownload();
 	configurarBotaoCopiaGrafo();
